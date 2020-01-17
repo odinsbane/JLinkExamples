@@ -2,17 +2,12 @@ package org.orangepalantir;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
-import java.util.ArrayList;
-import java.util.List;
 
-public class CircleGuageWindow {
+public class CircleGuageWidget implements Widget{
     String name;
     double minTheta = Math.PI/4;
     double maxTheta = 3*Math.PI/4;
@@ -21,7 +16,17 @@ public class CircleGuageWindow {
     double value;
 
 
-    CircleGuageWindow.PlotPanel panel;
+    CircleGuageWidget.PlotPanel panel;
+
+    @Override
+    public JPanel getPanel() {
+        return panel;
+    }
+
+    @Override
+    public void addCloseListener(CloseListener cl) {
+        cl.close(this);
+    }
 
     class PlotPanel extends JPanel {
         int padding = 15;
@@ -29,7 +34,7 @@ public class CircleGuageWindow {
 
         Color bg = new Color(50, 0, 0);
         PlotPanel(){
-            System.out.println("created!");
+            setOpaque(false);
         }
         /**
          * fills the space with a black rectangle and a white x-box in the top right corner. The center is then filled
@@ -41,9 +46,11 @@ public class CircleGuageWindow {
         public void paintComponent(Graphics g){
             int w = getWidth();
             int h = getHeight();
-            g.setColor(Color.BLACK);
+            Graphics2D g2d = (Graphics2D)g;
+            g2d.setComposite(AlphaComposite.Clear);
+            g.setColor(new Color(0,0,0,0));
             g.fillRect(0, 0, w, h);
-
+            g2d.setComposite(AlphaComposite.SrcOver);
             int drawLength = w<h? w: h - 2*padding;
 
             int padx = (w - drawLength)/2;
@@ -58,7 +65,6 @@ public class CircleGuageWindow {
             g.drawOval(padding + delta, padding + delta, drawLength-2*delta, drawLength - 2*delta);
 
             g.drawString("" + value, w/2,  h/2);
-            System.out.println("repaint");
             g.setColor(Color.WHITE);
 
             int cx0 = w + delta - padding;
@@ -85,7 +91,6 @@ public class CircleGuageWindow {
 
             double r2 = radius*0.8;
             g.setColor(Color.RED);
-            Graphics2D g2d = (Graphics2D)g;
             Ellipse2D e1 = new Ellipse2D.Double(ox - r2 * Math.cos(minTheta)-delta, oy - r2*Math.sin(minTheta)-delta, 2*delta, 2*delta);
             Ellipse2D e2 = new Ellipse2D.Double(ox - r2 * Math.cos(maxTheta)-delta, oy - r2*Math.sin(maxTheta)-delta, 2*delta, 2*delta);
             g2d.fill(e1);
@@ -94,13 +99,13 @@ public class CircleGuageWindow {
 
     }
 
-    public CircleGuageWindow(){
+    public CircleGuageWidget(){
 
     }
 
     public void initialize(String name){
         this.name = name;
-        panel = new CircleGuageWindow.PlotPanel();
+        panel = new CircleGuageWidget.PlotPanel();
 
     }
 

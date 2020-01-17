@@ -20,7 +20,7 @@ public class LogFilePlottingApp {
     public void monitor(FileMonitor fileMonitor){
 
         CyclicPlotWindow window = new CyclicPlotWindow(points);
-        CircleGuageWindow batchDial = new CircleGuageWindow();
+        CircleGuageWidget batchDial = new CircleGuageWidget();
         try{
             window.initialize(fileMonitor.getIds());
             batchDial.initialize("batch");
@@ -70,9 +70,15 @@ public class LogFilePlottingApp {
     }
 
     public static void main(String[] args){
-        JFileChooser choose = new JFileChooser();
-        choose.showDialog(null, "log file");
-        Path p = Paths.get(choose.getSelectedFile().getAbsolutePath());
+        Path p;
+        if(args.length==0) {
+            JFileChooser choose = new JFileChooser();
+            choose.showDialog(null, "log file");
+            p = Paths.get(choose.getSelectedFile().getAbsolutePath());
+        } else{
+            p = Paths.get(args[0]);
+        }
+
         LogFilePlottingApp lpa = new LogFilePlottingApp();
         FileMonitor monitor = new FileMonitor(p);
         monitor.sync = true;

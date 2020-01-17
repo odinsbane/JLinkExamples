@@ -4,31 +4,33 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A small window/frame that keeps track of n points in a cycle. ie it has a cursor that represents the first point, and
- * each time data is added that cursor is moved forward one.
- */
-public class CyclicPlotWindow {
-    List<double[]> data;
-    List<String> names;
-    int points;
-    int cursor = 0;
-    PlotPanel panel;
+public class CircleGuageWindow {
+    String name;
+    double minTheta = Math.PI/4;
+    double maxTheta = 3*Math.PI/4;
+    double highValue = 1;
+    double lowValue = 0;
+    double value;
+
+
+    CircleGuageWindow.PlotPanel panel;
 
     class PlotPanel extends JPanel {
         int padding = 15;
         int delta = 3; //inset padding.
 
-        double highT = 120;
-        double lowT = 0;
         Color bg = new Color(50, 0, 0);
-
+        PlotPanel(){
+            System.out.println("created!");
+        }
         /**
          * fills the space with a black rectangle and a white x-box in the top right corner. The center is then filled
          * with a dark red, and data points are plotted.
@@ -39,19 +41,25 @@ public class CyclicPlotWindow {
         public void paintComponent(Graphics g){
             int w = getWidth();
             int h = getHeight();
-            int lc = cursor;
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, w, h);
 
-            int dw = w - 2*padding;
-            int dh = h - 2*padding;
+            int drawLength = w<h? w: h - 2*padding;
+
+            int padx = (w - drawLength)/2;
+            int pady = (h - drawLength)/2;
+
+
 
             g.setColor(bg);
-            g.fillRoundRect(padding, padding, dw, dh, 5, 5);
+            g.fillOval(padx, pady, drawLength, drawLength);
 
             g.setColor(Color.WHITE);
-            g.drawRoundRect(padding, padding, dw, dh, 5, 5);
+            g.drawOval(padding + delta, padding + delta, drawLength-2*delta, drawLength - 2*delta);
 
+            g.drawString("" + value, w/2,  h/2);
+            System.out.println("repaint");
+            g.setColor(Color.WHITE);
 
             int cx0 = w + delta - padding;
             int cx1 = w - delta;
@@ -62,84 +70,61 @@ public class CyclicPlotWindow {
             g.drawLine(cx0, cy0, cx1, cy1);
             g.drawLine(cx0, cy1, cx1, cy0);
 
+            double theta = (maxTheta - minTheta)*(value - lowValue)/(highValue - lowValue) + minTheta;
 
+            theta = theta<minTheta?minTheta:theta;
+            theta = theta>maxTheta?maxTheta:theta;
 
-            double xf = dw*1.0/(points-1);
-            double yf = dh/(highT - lowT);
+            int ox = w/2;
+            int oy = h - pady - 2*delta;
+            double radius = drawLength*0.75;
+            double x = Math.cos(theta)*radius;
+            double y = Math.sin(theta)*radius;
+            g.setColor(Color.YELLOW);
+            g.drawLine(ox, oy, ox - (int)x, oy - (int)y);
 
+            double r2 = radius*0.8;
             g.setColor(Color.RED);
-            int y100 = h - padding - (int)(yf*100);
-            g.drawLine( padding+1, y100, w-padding -1, y100 );
-
-            for(int j = 0; j<data.size(); j++){
-                if(names.get(j).contains("loss")){
-                    g.setColor(Color.BLUE);
-                } else{
-                    g.setColor(Color.GREEN);
-                }
-                double[] line = data.get(j);
-                for(int i = 0; i<points-1; i++){
-
-                    int i0 = (i+lc)%points;
-                    int i1 = (i+lc + 1)%points;
-
-                    int x0 = (int)(i*xf + padding);
-                    int y0 = (int)(h - padding - (line[i0] - lowT)*yf);
-
-                    int x1 = (int)((i+1)*xf + padding);
-                    int y1 = (int)(h - padding - (line[i1] - lowT)*yf);
-
-                    g.drawLine(x0, y0, x1, y1);
-                }
-            }
-
-
+            Graphics2D g2d = (Graphics2D)g;
+            Ellipse2D e1 = new Ellipse2D.Double(ox - r2 * Math.cos(minTheta)-delta, oy - r2*Math.sin(minTheta)-delta, 2*delta, 2*delta);
+            Ellipse2D e2 = new Ellipse2D.Double(ox - r2 * Math.cos(maxTheta)-delta, oy - r2*Math.sin(maxTheta)-delta, 2*delta, 2*delta);
+            g2d.fill(e1);
+            g2d.fill(e2);
         }
 
     }
 
-    public CyclicPlotWindow(int n){
-        points = n;
-    }
-
-    public void initialize(List<String> names){
-        this.names = new ArrayList<>(names);
-        data = new ArrayList<>();
-        panel = new PlotPanel();
-
-        for(String s: names){
-            data.add(new double[points]);
-        }
+    public CircleGuageWindow(){
 
     }
 
-    public void setPlotRange(double low, double high){
-        panel.highT = high;
-        panel.lowT = low;
+    public void initialize(String name){
+        this.name = name;
+        panel = new CircleGuageWindow.PlotPanel();
+
     }
+
 
     public void show(){
 
-        JFrame frame = new JFrame("sensors");
+        JFrame frame = new JFrame(name + " :: guage");
+
         frame.setUndecorated(true);
         frame.setContentPane(panel);
-        frame.setSize(320, 240);
+        frame.setSize(180, 180);
         frame.setVisible(true);
-
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int x = e.getX();
                 int y = e.getY();
                 int w = panel.getWidth();
-                int h = panel.getHeight();
-
                 int lb = w - panel.padding + panel.delta;
                 int ub = w - panel.delta;
-
+                System.out.println(x + ", " + y + "\t" + lb + ", " + ub);
+                panel.repaint();
                 if(x>=lb && x<= ub && y>=panel.delta && y<=panel.delta + panel.padding){
                     frame.setVisible(false);
-                    System.exit(0);
                 }
             }
         });
@@ -156,11 +141,12 @@ public class CyclicPlotWindow {
 
     }
 
-    public void addData(double[] newData){
-        for(int i = 0; i<newData.length; i++){
-            data.get(i)[cursor] = newData[i];
-        }
-        cursor = (cursor+1)%points;
+    public void setDomain(double min, double max){
+        lowValue = min;
+        highValue = max;
+    }
+    public void setValue(double newData){
+        value = newData;
         panel.repaint();
     }
 

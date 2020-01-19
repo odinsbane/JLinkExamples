@@ -14,12 +14,22 @@ import java.util.List;
  * A small window/frame that keeps track of n points in a cycle. ie it has a cursor that represents the first point, and
  * each time data is added that cursor is moved forward one.
  */
-public class CyclicPlotWindow {
+public class CyclicPlotWindow implements Widget{
     List<double[]> data;
     List<String> names;
     int points;
     int cursor = 0;
     PlotPanel panel;
+
+    @Override
+    public JPanel getPanel() {
+        return panel;
+    }
+
+    @Override
+    public void addCloseListener(CloseListener cl) {
+        //do stuff.
+    }
 
     class PlotPanel extends JPanel {
         int padding = 15;

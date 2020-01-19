@@ -81,7 +81,7 @@ public class LogFilePlottingApp {
 
         LogFilePlottingApp lpa = new LogFilePlottingApp();
         FileMonitor monitor = new FileMonitor(p);
-        monitor.sync = true;
+        monitor.setSync( true );
         lpa.monitor( monitor );
     }
 }

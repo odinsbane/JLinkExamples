@@ -18,11 +18,13 @@ public class FileMonitor {
     final Path path;
     FileTime last;
     double[] lastMeasurement;
-    boolean sync = false;
+    private boolean sync = false;
+
     FileMonitor(Path path){
         this.path = path;
     }
     String tilps = "\\s+";
+
 
     double[] getLatestSyncronized() throws InterruptedException, IOException {
         double[] r = measurements.take();
@@ -37,6 +39,14 @@ public class FileMonitor {
         return lastMeasurement;
     }
 
+    /**
+     * gets the latest measurement, either by returning the last one added without waiting, or
+     * blocks until a new measurement is available.
+     *
+     * @return double[] containing values.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     double[] getLatest() throws IOException, InterruptedException {
         if(sync){
             return getLatestSyncronized();
@@ -95,4 +105,11 @@ public class FileMonitor {
         }
     }
 
+    /**
+     * Causes values to be read in
+     * @param b
+     */
+    public void setSync(boolean b) {
+        sync = b;
+    }
 }

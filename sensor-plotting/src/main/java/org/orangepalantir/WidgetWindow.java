@@ -8,6 +8,8 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.nio.file.Path;
+import java.util.Random;
 
 public class WidgetWindow {
     JLayeredPane panel = new JLayeredPane();
@@ -38,21 +40,56 @@ public class WidgetWindow {
 
     }
 
+    /**
+     * Creates a plot widget and ad guage widget for each
+     *
+     * @param path
+     */
+    public void addFileMonitoringPanel(Path path){
+        // LogFilePlottingEngine
+        // gets a FileMonitor and a CyclicPlotWindow that get updated.
+        CyclicPlotWindow window = new CyclicPlotWindow(5000);
+        FileMonitor monitor = new FileMonitor(path);
+        monitor.setSync(true); //positlby switch to have a listener?
+        panel.add(window.panel);
+    }
+
     public static void main(String[] args){
         WidgetWindow ww = new WidgetWindow();
         JFrame frame = new JFrame();
         frame.setContentPane(ww.panel);
         CircleGuageWidget cgw = new CircleGuageWidget();
         cgw.initialize("test");
-        cgw.panel.setSize(140, 140);
-        ww.addWidget(cgw);
+        cgw.panel.setSize(280, 280);
 
+        CircleGuageWidget cgw2 = new CircleGuageWidget();
+        cgw2.initialize("test");
+        cgw2.panel.setSize(280, 280);
+        cgw.setDomain(0, 5000);
+        cgw2.setDomain(0, 5000);
+
+        ww.addWidget(cgw);
+        ww.addWidget(cgw2);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(640, 640);
         frame.setVisible(true);
 
-
+        new Thread(()->{
+            Random ng = new Random();
+            int i = 0;
+            while(true){
+                i = i + 1;
+                int delta = (int)(100 * ng.nextGaussian());
+                cgw.setValue(i + delta);
+                cgw2.setValue(delta*delta);
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 
     }
 }

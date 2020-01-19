@@ -6,6 +6,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CircleGuageWidget implements Widget{
     String name;
@@ -14,7 +17,7 @@ public class CircleGuageWidget implements Widget{
     double highValue = 1;
     double lowValue = 0;
     double value;
-
+    Rectangle2D closeBox = new Rectangle2D.Double(0, 0, 0, 0);
 
     CircleGuageWidget.PlotPanel panel;
 
@@ -47,7 +50,7 @@ public class CircleGuageWidget implements Widget{
             int w = getWidth();
             int h = getHeight();
             Graphics2D g2d = (Graphics2D)g;
-            g2d.setComposite(AlphaComposite.Clear);
+            //g2d.setComposite(AlphaComposite.Clear);
             g.setColor(new Color(0,0,0,0));
             g.fillRect(0, 0, w, h);
             g2d.setComposite(AlphaComposite.SrcOver);
@@ -73,6 +76,9 @@ public class CircleGuageWidget implements Widget{
             int cy1 = padding - delta;
 
             g.drawRect(cx0, cy0, padding - 2*delta, padding - 2*delta);
+
+            closeBox.setRect(cx0, cy0, padding - 2*delta, padding - 2*delta);
+
             g.drawLine(cx0, cy0, cx1, cy1);
             g.drawLine(cx0, cy1, cx1, cy0);
 
@@ -106,7 +112,18 @@ public class CircleGuageWidget implements Widget{
     public void initialize(String name){
         this.name = name;
         panel = new CircleGuageWidget.PlotPanel();
+        panel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
 
+                if(closeBox.contains(x,y)){
+                    panel.setVisible(false);
+                }
+
+            }
+        });
     }
 
 

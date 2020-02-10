@@ -4,6 +4,7 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A small swing application for displaying
@@ -19,11 +20,15 @@ public class SensorPlottingApp {
     public void monitor(){
 
         SensorMonitor monitor = new SensorMonitor();
-        CyclicPlotWindow window = new CyclicPlotWindow(points);
+        CyclicPlotWindow window = new CyclicPlotWindow("sensors", points);
+        AtomicBoolean running = new AtomicBoolean(true);
         try{
             monitor.initialize();
             window.initialize(monitor.getIds());
             EventQueue.invokeLater(window::show);
+            window.addCloseListener(w->{
+                running.set(false);
+            });
         } catch (InterruptedException e) {
             e.printStackTrace();
             return;
@@ -33,7 +38,7 @@ public class SensorPlottingApp {
             return;
         }
 
-        while(running){
+        while(running.get()){
             double start = 0.001*System.currentTimeMillis();
 
             try {

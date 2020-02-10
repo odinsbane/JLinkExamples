@@ -23,6 +23,8 @@ public class FileMonitor {
     FileMonitor(Path path){
         this.path = path;
     }
+
+    //dilemeter
     String tilps = "\\s+";
 
 
@@ -57,15 +59,22 @@ public class FileMonitor {
 
     List<double[]> getAllData() throws IOException {
         List<String> lines = Files.readAllLines(path).stream().filter(l->!l.startsWith("#")).collect(Collectors.toList());
+        last = Files.getLastModifiedTime(path);
+
         return lines.stream().map(
                 l->l.split(tilps)
         ).map(
                 s-> Arrays.stream(s).mapToDouble(Double::valueOf).toArray()
         ).collect(Collectors.toList());
+
     }
 
     double[] readLast() throws IOException {
         List<String> lines = Files.readAllLines(path).stream().filter(l->!l.startsWith("#")).collect(Collectors.toList());
+
+        if(lines.size()==0){
+            return new double[0];
+        }
         double[] row = Arrays.stream(
                 lines.get( lines.size() - 1 ).split(tilps)
         ).mapToDouble( Double::valueOf ).toArray();
@@ -77,11 +86,9 @@ public class FileMonitor {
 
     List<String> getIds() throws IOException {
         List<String> lines = Files.readAllLines(path).stream().filter(l->l.startsWith("#")).collect(Collectors.toList());
-        last = Files.getLastModifiedTime(path);
         lastMeasurement = readLast();
         new Thread(this::monitorLoop).start();
         List<String> ids = Arrays.asList(lines.get(lines.size()-1).split( tilps ));
-        System.out.println(ids.size());
         return ids;
     }
 
@@ -92,7 +99,7 @@ public class FileMonitor {
 
                 if(mod.compareTo(last)>0){
                     lastMeasurement = readLast( );
-                    measurements.add(lastMeasurement);
+                    measurements.offer(lastMeasurement);
                 } else{
                     Thread.sleep(500);
                 }

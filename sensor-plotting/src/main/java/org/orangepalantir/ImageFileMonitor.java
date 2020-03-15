@@ -49,12 +49,18 @@ public class ImageFileMonitor extends Widget {
                     if(mod.compareTo(last)>0){
                         img = ImageIO.read(path.toFile());
                         last = mod;
-                    } else{
+                    } else {
                         Thread.sleep(500);
                     }
-
-                } catch (IOException | InterruptedException e) {
+                } catch (IOException e) {
+                    //don't do anything since images can be large.
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e1) {
+                        break;
+                    }
                     e.printStackTrace();
+                } catch( InterruptedException e){
                     break;
                 }
 

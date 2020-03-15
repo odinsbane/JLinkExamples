@@ -47,7 +47,8 @@ public class ImageFileMonitor extends Widget {
                     FileTime mod = Files.getLastModifiedTime(path);
 
                     if(mod.compareTo(last)>0){
-                        img = ImageIO.read(path.toFile());
+                        BufferedImage bi = ImageIO.read(path.toFile());
+                        setImage(bi);
                         last = mod;
                     } else {
                         Thread.sleep(500);

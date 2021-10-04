@@ -7,7 +7,6 @@
     <groupId>org.orangepalantir</groupId>
     <artifactId>sensorplottingmod</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <packaging>jmod</packaging>
     
     <pluginRepositories>
         <pluginRepository>
@@ -36,18 +35,14 @@
             </configuration>
         </plugin>
         <plugin>
-            <artifactId>maven-jmod-plugin</artifactId>
-            <version>3.0.0-alpha-2-SNAPSHOT</version>
-            <extensions>true</extensions>
-            <dependencies>
-                <dependency>
-                    <groupId>org.ow2.asm</groupId>
-                    <artifactId>asm</artifactId>
-                    <version>7.1</version>
-                </dependency>
-            </dependencies>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-maven-plugin</artifactId>
+            <version>0.0.4</version>
+            <configuration>
+                <mainClass>sensorplotting/org.orangepalantir.LogFilePlottingApp</mainClass>
+                <launcher>logfileplotting</launcher>
+            </configuration>
         </plugin>
-        
     </plugins>
     </build>
 </project>

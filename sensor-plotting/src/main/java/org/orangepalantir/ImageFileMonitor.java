@@ -14,8 +14,8 @@ public class ImageFileMonitor extends Widget {
     Path path;
     FileTime last;
     public ImageFileMonitor(Path monitoring) throws IOException {
-        super(monitoring.getFileName().toString());
-        img = ImageIO.read(monitoring.toFile());
+
+        img = readImage(monitoring);
         last = Files.getLastModifiedTime(monitoring);
         int w = 480;
         int h = 360;
@@ -47,7 +47,7 @@ public class ImageFileMonitor extends Widget {
                     FileTime mod = Files.getLastModifiedTime(path);
 
                     if(mod.compareTo(last)>0){
-                        BufferedImage bi = ImageIO.read(path.toFile());
+                        BufferedImage bi = readImage(path);
                         setImage(bi);
                         last = mod;
                     } else {
@@ -69,6 +69,10 @@ public class ImageFileMonitor extends Widget {
         });
         t.setDaemon(true);
         t.start();
+    }
+
+    public BufferedImage readImage(Path loc) throws IOException {
+        return ImageIO.read(loc.toFile());
     }
 
     public void setImage(BufferedImage img){
